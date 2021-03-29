@@ -43,6 +43,7 @@ int make_data(data **dat, options *opt)
 	dp->n_quality = 0;
 	dp->dmat = NULL;
 	dp->qmat = NULL;
+	dp->names = NULL;
 
 	dp->error_prob = NULL;
 
@@ -119,6 +120,17 @@ int sync_state(data *dat, options *opt)
 		for (size_t i = 0; i < dat->sample_size; ++i)
 			dat->lengths[i] = dat->max_read_length;
 
+	if (dat->fdata->names) {
+		dat->names = malloc(dat->sample_size * sizeof(*dat->names));
+		if (!dat->names)
+			return mmessage(ERROR_MSG, MEMORY_ALLOCATION,
+								"data.names");
+		char *nptr = dat->fdata->names;
+		for (size_t i = 0; i < dat->sample_size; ++i) {
+			dat->names[i] = nptr;
+			nptr += dat->fdata->name_lengths[i];
+		}
+	}
 
 	/* allocate the index array of reads */
 	dat->read_idx = malloc(dat->sample_size * sizeof *dat->read_idx);
@@ -314,6 +326,7 @@ void free_data(data *dat)
 		if (dat->qmatU) free(dat->qmatU);
 		if (dat->dmatU) free(dat->dmatU);
 		if (dat->UMI_count) delete_all(&dat->UMI_count);
+		if (dat->names) free(dat->names);
 		free(dat);
 	}
 } /* free_data */

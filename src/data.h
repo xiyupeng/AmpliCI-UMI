@@ -78,6 +78,7 @@ struct _data {
 	/* easy access to reads and quality scores */
 	data_t **dmat;		/*<! nucleotide sequences as matrix */
 	data_t **qmat;	 	/*<! quality sequences as matrix */
+	char **names;
 	unsigned int *lengths;	/*<! length of reads */
 	size_t sample_size;	/*<! number of reads */
 
