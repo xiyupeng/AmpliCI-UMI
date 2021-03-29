@@ -25,6 +25,7 @@
 #include "amplici.h"
 #include "error_est.h"
 #include "libamplici.h"
+#include "constants.h"
 
 /**
  * Cluster amplicon sequences with a given fastq file
