@@ -101,10 +101,10 @@ enum {
 	IUPAC_N = 15
 };
 enum {
-	STD_A,	/* 0 */
-	STD_C,	/* 1 */
-	STD_G,	/* 2 */
-	STD_T	/* 3 */
+	NUC_A,	/* 0 */
+	NUC_C,	/* 1 */
+	NUC_G,	/* 2 */
+	NUC_T	/* 3 */
 };
 
 /**
