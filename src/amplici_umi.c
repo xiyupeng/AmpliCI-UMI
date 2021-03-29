@@ -1078,8 +1078,8 @@ int trans_expect_UMIs(options *opt, data *dat, data_t *seeds_UMI,
             for (unsigned int j = 0; j < opt->UMI_length; j++) {
 
 						if (error_profile) {
-							if (opt->err_encoding == STD_ENCODING)  // make sure opt->err_encoding is the same as mod->err_encoding
-								eik += translate_error_STD_to_XY(
+							if (opt->err_encoding == NUC_ENCODING)  // make sure opt->err_encoding is the same as mod->err_encoding
+								eik += translate_error_NUC_to_XY(
 									error_profile,
 									dat->n_quality, hap_seq[j],
 									dat->dmatU[r][j],
