@@ -90,7 +90,7 @@ xy_t const iupac_to_xy[NUM_IUPAC_SYMBOLS] = {
  * NOT xy_t.
  */
 unsigned char const iupac_to_std[NUM_IUPAC_SYMBOLS] = {
-	0, STD_A, STD_C, 0, STD_G, 0, 0, 0, STD_T, 0, 0, 0, 0, 0, 0, 0
+	0, NUC_A, NUC_C, 0, NUC_G, 0, 0, 0, NUC_T, 0, 0, 0, 0, 0, 0, 0
 };
 
 /**
