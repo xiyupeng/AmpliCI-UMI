@@ -341,8 +341,10 @@ int haplotype_selection(options * opt, data * dat, model *mod, initializer *ini,
 	/* select the first haplotype with the highest abundance */
 	update_seeds(dat, ini, select, ord);
 	
-	debug_msg(DEBUG_I, fxn_debug, "Selecting %d with estimated true"
-				" abundance %.3f\n", ord, ini->H_abun[select]);
+	debug_msg(DEBUG_I, fxn_debug, "Selecting %d (%.*s) with estimated true"
+		" abundance %.3f as first candidate.\n", ord,
+		dat->fdata->name_lengths[ini->uniq_seq_idx[ord]],
+		dat->names[ini->uniq_seq_idx[ord]], ini->H_abun[select]);
 
 	/* [TODO] parallelize */
 	if (opt->nw_align == ALIGNMENT_UNIQ_SEQ)
@@ -443,8 +445,11 @@ int haplotype_selection(options * opt, data * dat, model *mod, initializer *ini,
 		/* select the haplotype temporarily */
 		update_seeds(dat, ini, select, ord);
 	
-		debug_msg(DEBUG_I, fxn_debug, "Selecting %d with estimated true"
-				" abundance %.3f\n", ord, ini->H_abun[select]);
+		debug_msg(DEBUG_I, fxn_debug, "Selecting %d (%.*s) with "
+			"estimated true abundance %.3f as %uth candidate\n",
+			ord, dat->fdata->name_lengths[ini->uniq_seq_idx[ord]],
+					dat->names[ini->uniq_seq_idx[ord]],
+					ini->H_abun[select], select + 1);
 			
 		/* Transition prob without alignment free strategy */
 		if (opt->nw_align == ALIGNMENT_UNIQ_SEQ)
@@ -1172,9 +1177,9 @@ int Expected_SelfTrans(options *opt, data *dat, double *self_trans,
 //			}
 		
 			if (error_profile) {
-				if (err_encoding == STD_ENCODING)
+				if (err_encoding == NUC_ENCODING)
 					self_trans[r] +=
-						translate_error_STD_to_XY(error_profile,
+						translate_error_NUC_to_XY(error_profile,
 						dat->n_quality, dat->dmat[r][j],
 						dat->dmat[r][j], dat->qmat[r][j]);
 				else if (err_encoding == XY_ENCODING)
@@ -1234,9 +1239,9 @@ int ExpTrans_nogap(data *dat, options *opt, initializer *ini, unsigned int H_id,
 //				}
 
 				if (error_profile) {
-					if (err_encoding == STD_ENCODING)
+					if (err_encoding == NUC_ENCODING)
 						ini->e_trans[idx] +=
-							translate_error_STD_to_XY(
+							translate_error_NUC_to_XY(
 							error_profile,
 							dat->n_quality, seq[j],
 							dat->dmat[r][j],
@@ -1339,8 +1344,8 @@ double trans_nw(options *opt, unsigned char **aln, size_t alen,
 
 				/* for per-site indel models */
 				if (error_profile) {
-					if (err_encoding == STD_ENCODING)
-						e_trans += translate_error_STD_to_XY(
+					if (err_encoding == NUC_ENCODING)
+						e_trans += translate_error_NUC_to_XY(
 							error_profile,
 							n_quality, aln[1][j],
 							aln[1][j], rqmat[j2]);
@@ -1388,8 +1393,8 @@ double trans_nw(options *opt, unsigned char **aln, size_t alen,
 
 			/* match and mismatch */
 			if (error_profile) {
-				if (err_encoding == STD_ENCODING)
-					e_trans += translate_error_STD_to_XY(
+				if (err_encoding == NUC_ENCODING)
+					e_trans += translate_error_NUC_to_XY(
 						error_profile, n_quality,
 						aln[0][j], aln[1][j],
 							rqmat[j2]);
@@ -1927,7 +1932,7 @@ int abun_pvalue(options *opt, initializer *ini, size_t *idx_array,
 
 	/* compute exact p value if n is small enough */
 	if (count < MAX_N_EXACT_P) {
-		perr = malloc(count * sizeof *perr);
+		perr = malloc((count + 1) * sizeof *perr);
 		if (!perr)
 			return mmessage(ERROR_MSG, MEMORY_ALLOCATION, "perr");
 	}
@@ -1968,9 +1973,9 @@ int abun_pvalue(options *opt, initializer *ini, size_t *idx_array,
 	debug_msg(DEBUG_I, fxn_debug, "bound=%i;\n", bound);
 	debug_msg(DEBUG_I, fxn_debug, "count=%i;\n", count);
 
-	if (perr){
+	if (perr) {
 		*p = ppoisbin(bound, count, perr, 1); // P(S > bound)
-	}else{ /* approximate p value */
+	} else { /* approximate p value */
 		// *p = ppois(lower_bound, true_abun, 1, 0);	/* [KSD] What is this? */
 		/* avoid numeric problem here */
 		double sigma = sqrt(true_abun_var);
@@ -2003,7 +2008,7 @@ int abun_pvalue(options *opt, initializer *ini, size_t *idx_array,
 	}
 	debug_msg(DEBUG_I, fxn_debug, "Diagnostic Probability=%8.2e;\n", *p);
 
-	if (*p < 0 || *p >1)
+	if (*p < 0 || *p > 1)
 		return mmessage(ERROR_MSG, INTERNAL_ERROR,
 				"Diagnostic Probability is not in [0,1] ");
 EXITNOW:
@@ -2049,7 +2054,6 @@ double Simple_Estep(model *mod, size_t sample_size, double *e_trans,
 			mod->eik[idx] = exp(mod->eik[idx] - max);
 			sum += mod->eik[idx];
 		}
-
 		ll += log(sum) + max;
 
 		/* actually these posterior probabilities are not used */
@@ -2351,7 +2355,7 @@ int reads_assignment(options * opt, data * dat, model *mod, initializer *ini, ru
 	}
 
 	if((err = trans_expectation(opt, dat, ini, error_profile, 
-					mod->adj_trunpois, mod->eik,0)))
+					mod->adj_trunpois, mod->eik, 0)))
 		return err;
 	/* Keep codes below for debug purpose  */
 	/*
@@ -2380,8 +2384,8 @@ int reads_assignment(options * opt, data * dat, model *mod, initializer *ini, ru
 					for (unsigned int j = 0; j < dat->lengths[r]; j++) {
 
 						if (error_profile) {
-							if (mod->err_encoding == STD_ENCODING)
-								eik += translate_error_STD_to_XY(
+							if (mod->err_encoding == NUC_ENCODING)
+								eik += translate_error_NUC_to_XY(
 									error_profile,
 									dat->n_quality, hap_seq[j],
 									dat->dmat[id][j],
@@ -2441,7 +2445,7 @@ int reads_assignment(options * opt, data * dat, model *mod, initializer *ini, ru
 	}
 	*/
 
-	if(opt->trans_matrix){
+	if (opt->trans_matrix) {
 		FILE *fp = fopen(opt->trans_matrix, "w");
 		if (!fp)
 			return mmessage(ERROR_MSG, FILE_OPEN_ERROR, opt->trans_matrix);
@@ -2457,10 +2461,11 @@ int reads_assignment(options * opt, data * dat, model *mod, initializer *ini, ru
 	}
 
 	/* simply update mod->pi */
-	assign_clusters(mod->eik, opt->K, dat->sample_size, ri->optimal_cluster_size,
-		ri->optimal_cluster_id, 1);
+	assign_clusters(mod->eik, opt->K, dat->sample_size,
+			ri->optimal_cluster_size, ri->optimal_cluster_id, 1);
 	for (unsigned int k = 0; k < opt->K; ++k) {
-		mod->pi[k] = (double) ri->optimal_cluster_size[k] / dat->sample_size;
+		mod->pi[k] = (double) ri->optimal_cluster_size[k]
+							/ dat->sample_size;
 		if (!mod->pi[k])
 			mod->pi[k] = 1.0 / dat->sample_size;  // possible if given haplotypes 
 		mod->pi[k] = log(mod->pi[k]);
@@ -2472,8 +2477,8 @@ int reads_assignment(options * opt, data * dat, model *mod, initializer *ini, ru
 			mod->eik[k*dat->sample_size+r] += mod->pi[k];
 
 	/* reassign reads with updated mod->eik (unnormalized ) */
-	assign_clusters(mod->eik, opt->K, dat->sample_size, ri->optimal_cluster_size,
-		ri->optimal_cluster_id, 1);
+	assign_clusters(mod->eik, opt->K, dat->sample_size,
+			ri->optimal_cluster_size, ri->optimal_cluster_id, 1);
 
 	/* filter with unnormalized mod->eik (pi* e_trans) */
 	likelihood_filter(opt->K, opt->ll_cutoff, mod->eik, NULL, NULL,
@@ -2485,7 +2490,7 @@ int reads_assignment(options * opt, data * dat, model *mod, initializer *ini, ru
 	opt->outfile_info = opt->outfile_base;
 
 	fp = fopen(opt->outfile_info, "w");
-    if (!fp)
+	if (!fp)
 		return mmessage(ERROR_MSG, FILE_OPEN_ERROR, opt->outfile_info);
 
 	fprintf(fp, "assignments: ");
@@ -2503,14 +2508,16 @@ int reads_assignment(options * opt, data * dat, model *mod, initializer *ini, ru
 } /* reads_assignment */
 
 /* calculate transition probability between reads and haplotypes */
-int trans_expectation(options *opt, data *dat,initializer*ini, double *error_profile, 
-					double adj_trunpois, double *trans_prob, int ends_free){
+int trans_expectation(options *opt, data *dat, initializer*ini,
+	double *error_profile, double adj_trunpois, double *trans_prob,
+								int ends_free)
+{
 
 	int err = NO_ERROR;
 	double l1third = 1./3;
 	int fxn_debug = opt->info;
 
-	for(unsigned int u = 0; u < dat->hash_length; ++u ){
+	for (unsigned int u = 0; u < dat->hash_length; ++u ) {
 
 		//mmessage(INFO_MSG, NO_ERROR, "The %5d uniq seq of total %5d sequences\n", u, dat->hash_length);
 
@@ -2525,32 +2532,33 @@ int trans_expectation(options *opt, data *dat,initializer*ini, double *error_pro
 					"Cannot find in the hash table !");
 
 		/* align to haplotypes  */
-		for (unsigned int h = 0; h < opt->K; ++h){
+		for (unsigned int h = 0; h < opt->K; ++h) {
 
 			unsigned char *hap_seq = ini->seeds[h];
 
-			if(opt->nw_align == NO_ALIGNMENT){
+			if (opt->nw_align == NO_ALIGNMENT) {
 				
-				for(unsigned int r = 0; r < count; ++r){
+				for (unsigned int r = 0; r < count; ++r) {
 					double eik = 0.;
 					size_t id = idx_array[r];
 					for (unsigned int j = 0; j < dat->lengths[r]; j++) {
 
 						if (error_profile) {
-							if (opt->err_encoding == STD_ENCODING)  // make sure opt->err_encoding is the same as mod->err_encoding
-								eik += translate_error_STD_to_XY(
+							if (opt->err_encoding == NUC_ENCODING)  // make sure opt->err_encoding is the same as mod->err_encoding
+								eik += translate_error_NUC_to_XY(
 									error_profile,
 									dat->n_quality, hap_seq[j],
 									dat->dmat[id][j],
 									dat->qmat[id][j]);
-						else if (opt->err_encoding == XY_ENCODING)
-							eik += error_profile[(NUM_NUCLEOTIDES
-								* hap_seq[j] + dat->dmat[id][j])
-								* dat->n_quality
-								+ dat->qmat[id][j]];
+							else if (opt->err_encoding == XY_ENCODING)
+								eik += error_profile[(NUM_NUCLEOTIDES
+									* hap_seq[j] + dat->dmat[id][j])
+									* dat->n_quality
+									+ dat->qmat[id][j]];
 						} else {
 							//double ep = adj * error_prob(dat->fdata, dat->qmat[r][j]);
 							double ep = dat->error_prob[dat->qmat[id][j]];	
+
 							if (dat->dmat[id][j] == hap_seq[j] )			
 								eik += log(1 - ep);
 							else
@@ -2560,7 +2568,7 @@ int trans_expectation(options *opt, data *dat,initializer*ini, double *error_pro
 					trans_prob[h*dat->sample_size+ id] = eik;		
 				}
 
-			}else{
+			} else {
 				size_t alen = dat->max_read_length;
 				unsigned int nindels = 0;
 				unsigned int nmismatch = 0;
@@ -2568,12 +2576,13 @@ int trans_expectation(options *opt, data *dat,initializer*ini, double *error_pro
 				unsigned char **aln = nwalign(hap_seq, read,
 				(size_t) ini->seed_lengths[h],
 				(size_t) rlen,
+
 				opt->score, opt->gap_p, opt->band, 1, NULL,
-									&err, &alen);
+								&err, &alen);
 
 				/* count for number of indels */
 				ana_alignment(aln, alen, rlen, &nindels, 
-						&nmismatch, opt->ends_free,opt->info); // need further check 
+					&nmismatch, opt->ends_free,opt->info); // need further check 
 
 				for(unsigned int r = 0; r<count;++r){
 
@@ -2614,13 +2623,13 @@ int trans_expectation(options *opt, data *dat,initializer*ini, double *error_pro
 
 				}
 				/* free */
-				if(aln){
+				if (aln) {
 					free(aln[0]);
 					free(aln[1]);
 					free(aln);
 					aln = NULL;
 				}
-				if(err)
+				if (err)
 					return err;
 			}
 		}
