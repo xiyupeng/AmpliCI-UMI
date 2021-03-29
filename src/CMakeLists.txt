@@ -5,6 +5,7 @@ project (AmpliCI VERSION 1.0.1)
 SET(CMAKE_CC_COMPILER  gcc)
 
 set(CMAKE_BUILD_TYPE release)
+#set(CMAKE_BUILD_TYPE debug)
 set(CMAKE_CXX_STANDARD 11)
 
 include(FindPackageHandleStandardArgs)
@@ -19,8 +20,9 @@ set(C_OBJ ./loessc.c)
 add_library(loess_raw STATIC ${F_OBJ} ${C_OBJ})
 
 set(C_OBJ2 ./amplici.c ./ampliclust.c ./align.c ./cmdline.c ./data.c 
-   ./error.c ./fastq.c ./hash.c ./initialize.c ./io.c ./libamplici.c
-   ./lmath.c ./model.c ./options.c ./statistics.c ./util.c ./amplici_umi.c ./partition.c )
+   ./error.c ./fastq_ksd.c ./hash.c ./initialize.c ./io.c ./libamplici.c
+   ./lmath.c ./model.c ./options.c ./statistics.c ./util.c ./amplici_umi.c
+   ./partition.c ./nuc.c ./sequence.c ./qual.c ./constants.c )
 
 add_library(amplici SHARED ${C_OBJ2} )
 add_library(amplici_static STATIC ${C_OBJ2})
