@@ -21,6 +21,7 @@
 #include "model.h"
 #include "data.h"
 #include "options.h"
+#include "nuc.h"
 
 /**
  * Create model object.
@@ -100,9 +101,10 @@ int make_model(model **mod, data *dat, options *opt)
 			for (unsigned int q = MIN_ASCII_QUALITY_SCORE;
 				 q <= MAX_ASCII_QUALITY_SCORE; q++){
 				fscanf(file, "%lf,", &rate);
-				if (q >= dat->min_quality && q <= dat->max_quality)
+				if (q >= dat->min_quality && q <= dat->max_quality) {
 					rm->error_profile[r * rm->n_quality +
-									  q - dat->min_quality] = log(rate / 1000); // log(error_rate)
+						  q - dat->min_quality] = log(rate / 1000); // log(error_rate)
+				}
 				debug_msg(DEBUG_I, fxn_debug,
 						  "r: %i,q:%i,rate: %f\n", r, q, rate);
 			}
@@ -267,7 +269,7 @@ int realloc_model(model *mod, data *dat, options *opt)
  * @param qual		observed quality score
  * @return		error probability
  */
-double translate_error_STD_to_XY(double *error_profile, unsigned char n_quality,
+double translate_error_NUC_to_XY(double *error_profile, unsigned char n_quality,
 	unsigned char hap_nuc, unsigned char obser_nuc, unsigned char qual){
 
 	double lp = 0.;
@@ -275,44 +277,44 @@ double translate_error_STD_to_XY(double *error_profile, unsigned char n_quality,
      //A (0),C(1),G(3),T(2)
 	if (hap_nuc == XY_A) {
 		if (obser_nuc == XY_A)
-			lp = error_profile[qual]; //A->A
+			lp = error_profile[n_quality*NUC_A + qual]; //A->A
 		else if (obser_nuc == XY_C)
-			lp = error_profile[n_quality+qual];  //A->C
-		else if (obser_nuc == XY_T)   //A->T
-			lp = error_profile[n_quality*3+qual];
-		else  // A->G
-			lp = error_profile[n_quality*2+qual];
+			lp = error_profile[n_quality*NUC_C + qual]; //A->C
+		else if (obser_nuc == XY_T)
+			lp = error_profile[n_quality*NUC_T + qual]; //A->T
+		else
+			lp = error_profile[n_quality*NUC_G + qual]; //A->G
 	} else if (hap_nuc == XY_C) {
 		if (obser_nuc == XY_A)
-			lp = error_profile[n_quality*4+qual]; //C->A
+			lp = error_profile[n_quality*(4 + NUC_A) + qual]; //C->A
 		else if (obser_nuc == XY_C)
-			lp = error_profile[n_quality*5+qual];  //C->C
-		else if (obser_nuc == XY_T)   //C->T
-			lp = error_profile[n_quality*7+qual];
-		else  // C->G
-			lp = error_profile[n_quality*6+qual];
+			lp = error_profile[n_quality*(4 + NUC_C) + qual]; //C->C
+		else if (obser_nuc == XY_T)
+			lp = error_profile[n_quality*(4 + NUC_T) + qual]; //C->T
+		else
+			lp = error_profile[n_quality*(4 + NUC_G) + qual]; //C->G
 	} else if (hap_nuc == XY_G) {
 		if (obser_nuc == XY_A)
-			lp = error_profile[n_quality*8+qual]; //G->A
+			lp = error_profile[n_quality*(8 + NUC_A) + qual]; //G->A
 		else if (obser_nuc == XY_C)
-			lp = error_profile[n_quality*9+qual];  //G->C
-		else if (obser_nuc == XY_T)   //G->T
-			lp = error_profile[n_quality*11+qual];
-		else  // G->G
-			lp = error_profile[n_quality*10+qual];
+			lp = error_profile[n_quality*(8 + NUC_C) + qual]; //G->C
+		else if (obser_nuc == XY_T)
+			lp = error_profile[n_quality*(8 + NUC_T) + qual]; //G->T
+		else
+			lp = error_profile[n_quality*(8 + NUC_G) + qual]; //G->G
 	} else {
 		if (obser_nuc == XY_A)
-			lp = error_profile[n_quality*12+qual]; //T->A
+			lp = error_profile[n_quality*(12 + NUC_A) + qual]; //T->A
 		else if (obser_nuc == XY_C)
-			lp = error_profile[n_quality*13+qual];  //T->C
-		else if (obser_nuc == XY_T)   //T->T
-			lp = error_profile[n_quality*15+qual];
-		else  // T->G
-			lp = error_profile[n_quality*14+qual];
+			lp = error_profile[n_quality*(12 + NUC_C) + qual]; //T->C
+		else if (obser_nuc == XY_T)
+			lp = error_profile[n_quality*(12 + NUC_T) + qual]; //T->T
+		else
+			lp = error_profile[n_quality*(12 + NUC_G) + qual]; //T->G
 	}
 
 	return lp;
-}/* translate_error_STD_to_XY */
+}/* translate_error_NUC_to_XY */
 
 /**
  * Delete model object.

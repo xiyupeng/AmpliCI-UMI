@@ -82,7 +82,7 @@ struct _model {
 
 }; /* model */
 
-double translate_error_STD_to_XY(double *error_profile, unsigned char n_quality,
+double translate_error_NUC_to_XY(double *error_profile, unsigned char n_quality,
 	unsigned char hap_nuc, unsigned char obser_nuc, unsigned char qual);
 
 int make_model(model **mod, data *dat, options *opt);
