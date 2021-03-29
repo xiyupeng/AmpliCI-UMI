@@ -80,7 +80,7 @@ int make_options(options **opt) {
 	op->exclude_low_abundance_seeds = 0;
 	op->min_cosdist = log(0.999);
 	op->use_error_profile = 0;	
-	op->err_encoding = XY_ENCODING;   // Indicate that how error encoded in error profiles STD_ENCODING or XY_ENCODING
+	op->err_encoding = XY_ENCODING;   // Indicate that how error encoded in error profiles NUC_ENCODING or XY_ENCODING
 	op->error_profile_name = NULL; 
 	
 	
@@ -665,14 +665,14 @@ void fprint_usage(FILE *fp, const char *exe_name, const char *command, void *obj
 		fprintf(fp, "\t--insertion <insdbl>\n\t\tSequencing insertion error rate (see also --deletion or --indel).  [DEFAULT: %f]\n", opt->insertion_error);
 	if (!strcmp(command, "cluster"))
 		fprintf(fp, "\t--kmax <kuint>\n\t\tSet maximum number of clusters K.  [DEFAULT: %i]\n", opt->K_max);
-	if (!strcmp(command, "cluster"))
+	if (!strcmp(command, "cluster") || !strcmp(command, "assignment"))
 		fprintf(fp, "\t--log_likelihood | -ll <lldbl>\n\t\tLower bound for screening reads during cluster assignment.  This is the minimum log assignment likelihood, ln pi_k + ln Pr(r_i|h_k). [DEFAULT: %f]\n", opt->ll_cutoff);
 	if (!strcmp(command, "cluster")) {
 		fprintf(fp, "\t--outfile, -o FILE | FILE1 FILE2\n\t\tOutput file(s) for haplotype discovery, or cluster assignments (when used with --haplotypes).  [REQUIRED]\n");
 		fprintf(fp, "\t\tBy default, provide base name of file to output haplotypes (extension .fa) and information (extension .out) or provide names for both files, FASTA first.\n");
 	} else if (!strcmp(command, "error")) {
 		fprintf(fp, "\t--outfile, -o FILE\n\t\tOutput file for estimated error profile.  [REQUIRED]\n");
-	} else if (!strcmp(command, "assignmnet")) {
+	} else if (!strcmp(command, "assignment")) {
 		fprintf(fp, "\t--outfile, -o FILE\n\t\tOutput file cluster assignments.  [REQUIRED]\n");
 	}
 	if (!strcmp(command, "cluster"))
