@@ -73,6 +73,7 @@ int main(int argc, const char **argv)
 
 	/* encode nucleotides in 2-bits: error raised if ambiguous bases */
 	fqo->read_encoding = XY_ENCODING;
+	fqo->read_names = 1;
 
 	/* read sequence data */
 	if (opt->fastq_file && (err = read_fastq(opt->fastq_file,
