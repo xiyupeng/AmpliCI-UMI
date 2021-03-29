@@ -20,7 +20,7 @@ set(C_OBJ ./loessc.c)
 add_library(loess_raw STATIC ${F_OBJ} ${C_OBJ})
 
 set(C_OBJ2 ./amplici.c ./ampliclust.c ./align.c ./cmdline.c ./data.c 
-   ./error.c ./fastq_ksd.c ./hash.c ./initialize.c ./io.c ./libamplici.c
+   ./error.c ./fastq.c ./hash.c ./initialize.c ./io.c ./libamplici.c
    ./lmath.c ./model.c ./options.c ./statistics.c ./util.c ./amplici_umi.c
    ./partition.c ./nuc.c ./sequence.c ./qual.c ./constants.c )
 
