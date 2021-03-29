@@ -13,8 +13,11 @@
 #define __CONSTANTS_H__
 
 #include <inttypes.h>
+#include <stddef.h>
 
 #define UNUSED(x) (void)(x)
+
+extern size_t _data_size;
 
 /* suss out C standard enforced */
 #if defined(__STDC__)
