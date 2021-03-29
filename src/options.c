@@ -223,6 +223,8 @@ int parse_options(options *opt, int argc, const char **argv)
 			break;
 		case 'z':
 			opt->nw_align = ALIGNMENT_UNIQ_SEQ;
+			mmessage(INFO_MSG, NO_ERROR, "Running with "
+				"Needleman-Wunsch alignment of candidates.\n");
 			break;
 		case 'v':
 			if (i + 1 < argc && argv[i+1][0] != '-') {
@@ -236,8 +238,12 @@ int parse_options(options *opt, int argc, const char **argv)
 		case 'n':
 			if (!strcmp(&argv[i][j], "nJC69")) {
 				opt->JC69_model = 0;
-			}else{
+				mmessage(INFO_MSG, NO_ERROR, "Running without "
+					"JC69 model on haplotypes.\n");
+			} else {
 				opt->nw_align = NO_ALIGNMENT;
+				mmessage(INFO_MSG, NO_ERROR, "Running without "
+					"Needleman-Wunsch alignment.\n");
 			}
 			break;
 		case 'k':
@@ -656,8 +662,10 @@ void fprint_usage(FILE *fp, const char *exe_name, const char *command, void *obj
 	if (!strcmp(command, "error"))
 		fprintf(fp, "\t--exclude\n\t\tExclude small clusters during error estimation (set threshold with option --abundance). [DEFAULT: %s]\n", opt->exclude_low_abundance_seeds ? "yes" : "no");
 	fprintf(fp, "\t--fastq | -f <fstr>\n\t\tThe fastq input file.  [REQUIRED]\n");
-	if (!strcmp(command, "assignment"))
+	if (!strcmp(command, "assignment")) {
 		fprintf(fp, "\t--haplotypes | -i <hstr>\n\t\tFASTA file with haplotypes.  [DEFAULT: none]\n");
+		fprintf(fp, "\t--nNW\n\t\tDo NOT use Needleman-Wunsch alignment to align reads to the haplotype set before assignment.  [DEFAULT: %s]\n", opt->nw_align  ? "use" : "don't use");
+	}
 	fprintf(fp, "\t--help | -h\n\t\tThis help.\n");
 	if (!strcmp(command, "cluster"))
 		fprintf(fp, "\t--indel <inddbl>\n\t\tSequencing indel error rate.  Cannot also use options --insertion or --deletion.  [DEFAULT: %f]\n", opt->indel_error);
@@ -675,12 +683,15 @@ void fprint_usage(FILE *fp, const char *exe_name, const char *command, void *obj
 	} else if (!strcmp(command, "assignment")) {
 		fprintf(fp, "\t--outfile, -o FILE\n\t\tOutput file cluster assignments.  [REQUIRED]\n");
 	}
-	if (!strcmp(command, "cluster"))
+	if (!strcmp(command, "cluster")) {
 		fprintf(fp, "\t--per_candidate | --pdiag <pdbl>\n\t\tAdjust diagnostic threshold (--diagnostic) to %f / number_candidates.  [DEFAULT: %s]\n", opt->alpha, opt->per_candidate ? "yes" : "no");
-	if (!strcmp(command, "cluster"))
+		fprintf(fp, "\t--nNW\n\t\tDo NOT use Needleman-Wunsch alignment to align candidate haplotypes to the haplotype set to detect indel errors  [DEFAULT: %s]\n", opt->nw_align  ? "use" : "don't use");
+	}
+	if (!strcmp(command, "cluster") || !strcmp(command, "assignment")) {
 		fprintf(fp, "\t--profile | -p <estr>\n\t\tThe input error profile. If none, convert quality score to Phred error probability.  [DEFAULT: none]\n");
-	if (!strcmp(command, "cluster"))
 		fprintf(fp, "\t--scores <match> <mismatch> [<transversion_mismatch>] <gap>\n\t\tSet scores of the Needleman-Wunsch aligner.  [DEFAULT: %d %d %d %d]\n", opt->score[0][0], opt->score[0][3], opt->score[0][1], opt->gap_p);
+		fprintf(fp, "\t--nJC69\n\t\tDo NOT use JC69 model for haplotypes. The JC69 model reduces the number of model parameters and increases sensitivity.  [DEFAULT: %s]\n", opt->JC69_model ? "use" : "don't use");
+	}
 	fprintf(fp, "\t--verbose INT\n\t\tVerbosity level; set to 8+ for debugging.  [DEFAULT: %d]\n", opt->info);
 //	fprintf(fp, "\t-k <kuint>\n\t\tNumber of haplotypes in the haplotype set (used with -i <hstr>).  [DEFAULT: %i]\n", opt->K);	/* KSD: get rid of this option */
 	/* fprintf(fp, "\t--most <mint>\n\t\tReport top m-most abundant sequences and quit. [DEFAULT: %i]\n", opt->most_abundant); */
