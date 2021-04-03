@@ -23,7 +23,7 @@
  * @return		The first observation time
  */
 int add_sequence(hash **seq_count, unsigned char *seq, unsigned int length,
-								size_t idx, int *err)
+							size_t idx, int *err)
 {
 	hash *new;
 	int first = 0;

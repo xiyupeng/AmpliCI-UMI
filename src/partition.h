@@ -12,6 +12,7 @@
 
 int read_partition_file(char const * const filename, unsigned int * cluster_id, unsigned int sample_size);
 int ampliCI_wpartition(options * opt, data * dat, model *mod, initializer *ini, run_info *ri);
+int make_partition_ids_contiguous(unsigned int *cluster_id, unsigned int sample_size);
 
 #endif
 

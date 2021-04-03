@@ -596,6 +596,10 @@ int err_cnt_gen_wpartition(options *opt, data *dat, initializer *ini)
 							dat->sample_size)))
 		return err;
 
+	if ((err = make_partition_ids_contiguous(ini->cluster_id,
+							 dat->sample_size)))
+		return err;
+
 	unsigned int max = 0;
 
 	for (unsigned int i = 0; i < dat->sample_size; i++)
@@ -658,33 +662,20 @@ int err_cnt_gen_wpartition(options *opt, data *dat, initializer *ini)
 		for (hash *s = hash_list[k]; s != NULL; s = s->hh.next) {
 			if (s->count >= thres && s->count
 					>= opt->seed_min_observed_abundance) {
-				K_seeds ++;
-				ini->cluster_size[k] ++;
+				++K_seeds;
+				++ini->cluster_size[k];
 			} else {
 				break;
 			}
-			//
-			//if(s->count > max_abun){
-				//if(s->count > 20) fprintf(stderr, "s->count > 20\n");
-			//	max_abun = s->count;
-			//	idx = s->idx;
-				//memcpy(ini->seeds[k], s->sequence,
-				//	dat->max_read_length * sizeof **ini->seeds);
-			//}
 		}
 	}
 
-	//unsigned int sum_subK;
-	//for (unsigned int k =0 ; k < K_partitions; k++){
-	//	sum_subK +=  ini->cluster_size[k];
-	//}
-	//fprintf(stderr, "sum_subK : %d\n", sum_subK);
-
-	// There are some zero clusters in the K partitions
+	// count clusters without minimum observed abundance member
 	unsigned int num_null = 0;
+
 	for (unsigned int k = 0; k < K_partitions; ++k)
 		if (ini->cluster_size[k] == 0)
-			num_null++;
+			++num_null;
 
 	fprintf(stderr, "K_seeds: %u\n", K_seeds);
 	K_seeds += (opt->exclude_low_abundance_seeds ? 0 : num_null);
@@ -720,12 +711,12 @@ int err_cnt_gen_wpartition(options *opt, data *dat, initializer *ini)
 		hash *s = hash_list[k], *cs;
 		unsigned int subK = ini->cluster_size[k];
 
-		// no collision or zero cluster
+		/* no collision or null cluster */
 		if (subK == 1 || (subK == 0
 				&& !opt->exclude_low_abundance_seeds)) {
 
 			memcpy(ini->seeds[current_k], s->sequence,
-				dat->max_read_length * sizeof **ini->seeds);	/* [KSD, BUG] I think this is rare read past end of array bug when strlen(s->sequence) < dat->max_read_length */
+				dat->lengths[s->idx] * sizeof **ini->seeds);
 			ini->seed_lengths[current_k] = dat->lengths[s->idx];
 			/* some clusters are dropped */
 			if (opt->exclude_low_abundance_seeds)
@@ -735,12 +726,13 @@ int err_cnt_gen_wpartition(options *opt, data *dat, initializer *ini)
 						new_cluster_id[i] = current_k;
 			++current_k;
 
-		/* exclude clusters without obvious centers */
+		/* exclude clusters without sufficiently abundant members */
 		} else if (subK == 0 && opt->exclude_low_abundance_seeds) {
 			for (unsigned int i = 0; i < dat->sample_size; ++i)
 				if (ini->cluster_id[i] == k)
 					new_cluster_id[i] = K_seeds;
-		} else {  // collision
+		/* collision */
+		} else {
 			unsigned int lidx[subK];
 
 			// copy seeds information
@@ -750,7 +742,7 @@ int err_cnt_gen_wpartition(options *opt, data *dat, initializer *ini)
 				if (sk == 0) {
 					memcpy(ini->seeds[current_k],
 								s->sequence,
-							dat->max_read_length	/* [KSD, bUG] see above */
+							dat->lengths[s->idx]
 							* sizeof(**ini->seeds));
 					ini->seed_lengths[current_k]
 							= dat->lengths[s->idx];
@@ -761,9 +753,9 @@ int err_cnt_gen_wpartition(options *opt, data *dat, initializer *ini)
 						opt->exclude_low_abundance_seeds
 						? current_k++
 						: K_partitions + extra_k++;
-					//fprintf(stderr, "%d, %d\n",pos,K_seeds);
+
 					memcpy(ini->seeds[lk], s->sequence,
-							dat->max_read_length 	/* [KSD, BUG] see above */
+							dat->lengths[s->idx]
 							* sizeof(**ini->seeds));
 					ini->seed_lengths[lk]
 						= dat->lengths[s->idx];
@@ -789,8 +781,9 @@ int err_cnt_gen_wpartition(options *opt, data *dat, initializer *ini)
 					unsigned char *hapk
 							= ini->seeds[lidx[sk]];
 					unsigned int hdist = hamming_uchar_dis(
-							dat->dmat[i], hapk,
-							dat->max_read_length);	/* [BUG,KSD] Looks like a bug for variable length reads */
+						dat->dmat[i], hapk,
+						MIN(ini->seed_lengths[lidx[sk]],
+								dat->lengths[i]));
 
 					// fprintf(stderr, "%d, %d\n",lidx[sk], hdist);
 					if (hdist < min_dist) {
@@ -801,13 +794,14 @@ int err_cnt_gen_wpartition(options *opt, data *dat, initializer *ini)
 						min_dist = hdist;
 					}
 				}
-				//fprintf(stderr, "previous %d, current %d\n",k, ini->cluster_id[i]);
 			}
 		}
 	}
 
 	if (opt->exclude_low_abundance_seeds && current_k != K_seeds)
-		return mmessage(ERROR_MSG, INTERNAL_ERROR, "current_k = %u != K_seeds = %u\n", current_k, K_seeds);
+		return mmessage(ERROR_MSG, INTERNAL_ERROR, "current_k = %u "
+					"!= K_seeds = %u\n", current_k, K_seeds);
+
 	if (opt->exclude_low_abundance_seeds) {
 		free(ini->cluster_id);
 		ini->cluster_id = new_cluster_id;
@@ -819,31 +813,6 @@ int err_cnt_gen_wpartition(options *opt, data *dat, initializer *ini)
 	//for(unsigned int i = 0; i < dat->sample_size; i++){
 	//	fprintf(stderr, "%d",ini->cluster_id[i]);
 	//}
-
-
-	/*
-	for (unsigned int k = 0; k < K_partitions; k++){
-		unsigned int max_abun = 0;
-		hash *s = NULL;
-		unsigned int idx = 0;
-		// fprintf(stderr, "count : %d\n", hash_list[k]->count);
-		for (s = hash_list[k]; s != NULL; s = s->hh.next) {
-			//if(k==3)
-			//	fprintf(stderr, "s->count : %d for the %d th \n", s->count, k);
-			if(s->count > max_abun){
-				//if(s->count > 20) fprintf(stderr, "s->count > 20\n");
-				max_abun = s->count;
-				idx = s->idx;
-				//memcpy(ini->seeds[k], s->sequence,
-				//	dat->max_read_length * sizeof **ini->seeds);
-			}
-		}
-		memcpy(ini->seeds[k], dat->dmat[idx],
-				dat->max_read_length * sizeof **ini->seeds);
-		ini->seed_lengths[k] = dat->lengths[idx];
-		if(hash_list[k])
-			delete_all(&hash_list[k]);
-	} */
 
 
 	/* count error types with given assignment */
@@ -899,4 +868,3 @@ int err_count_with_assignment(data *dat, unsigned int *cluster_id,
 			"of %u kept base calls.\n", kept_errors, kept_bases);
 	return NO_ERROR;
 }/* err_count_with_assignment */
-

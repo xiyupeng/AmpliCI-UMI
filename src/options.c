@@ -646,27 +646,27 @@ void fprint_usage(FILE *fp, const char *exe_name, const char *command, void *obj
 	/* KSD: Maybe we should make AmpliCI-cons the default. */
 	fprintf(fp, "\n\nOPTIONS\n");
 	if (!strcmp(command, "cluster"))
-		fprintf(fp, "\t--abundance | -lb FLOAT\n\t\tLower bound for scaled true abundance during haplotype reconstruction.  [DEFAULT: %f]\n", opt->low_bound);
+		fprintf(fp, "\t--abundance, -lb FLOAT\n\t\tLower bound for scaled true abundance during haplotype reconstruction.  [DEFAULT: %f]\n", opt->low_bound);
 	else if (!strcmp(command, "error"))
 		fprintf(fp, "\t--abundance FLOAT\n\t\tLower bound on observed abundance for inclusion of seeded cluster during error estimation.  [DEFAULT: %f]\n", opt->seed_min_observed_abundance);
 	if (!strcmp(command, "cluster"))
-		fprintf(fp, "\t--align | -z \n\t\tAlign all reads to haplotypes (slow).  [DEFAULT: no]\n");	 /* KSD:  --align | -a */
+		fprintf(fp, "\t--align, -z \n\t\tAlign all reads to haplotypes (slow).  [DEFAULT: no]\n");	 /* KSD:  --align | -a */
 	if (!strcmp(command, "cluster"))
-		fprintf(fp, "\t--contaminants | -c <ctuint>\n\t\tBaseline count abundance of contaminating or noise sequences.  [DEFAULT: %i]\n", opt->contamination_threshold);
+		fprintf(fp, "\t--contaminants, -c <ctuint>\n\t\tBaseline count abundance of contaminating or noise sequences.  [DEFAULT: %i]\n", opt->contamination_threshold);
 	if (!strcmp(command, "cluster"))
 		fprintf(fp, "\t--deletion <deldbl>\n\t\tSequencing deletion error rate (see also --insertion or --indel).  [DEFAULT: %f]\n", opt->deletion_error);
 	if (!strcmp(command, "cluster"))
-		fprintf(fp, "\t--diagnostic | -a <ddbl>\n\t\tThreshold for diagnostic probability in the diagnostic/contamination test.  [DEFAULT: %f].\n", opt->alpha);
+		fprintf(fp, "\t--diagnostic, -a <ddbl>\n\t\tThreshold for diagnostic probability in the diagnostic/contamination test.  [DEFAULT: %f].\n", opt->alpha);
 	if (!strcmp(command, "cluster"))
-		fprintf(fp, "\t--error | -e\n\t\tEstimate the error profile.\n");
+		fprintf(fp, "\t--error, -e\n\t\tEstimate the error profile.\n");
 	if (!strcmp(command, "error"))
 		fprintf(fp, "\t--exclude\n\t\tExclude small clusters during error estimation (set threshold with option --abundance). [DEFAULT: %s]\n", opt->exclude_low_abundance_seeds ? "yes" : "no");
-	fprintf(fp, "\t--fastq | -f <fstr>\n\t\tThe fastq input file.  [REQUIRED]\n");
+	fprintf(fp, "\t--fastq, -f <fstr>\n\t\tThe fastq input file.  [REQUIRED]\n");
 	if (!strcmp(command, "assignment")) {
-		fprintf(fp, "\t--haplotypes | -i <hstr>\n\t\tFASTA file with haplotypes.  [DEFAULT: none]\n");
+		fprintf(fp, "\t--haplotypes, -i <hstr>\n\t\tFASTA file with haplotypes.  [DEFAULT: none]\n");
 		fprintf(fp, "\t--nNW\n\t\tDo NOT use Needleman-Wunsch alignment to align reads to the haplotype set before assignment.  [DEFAULT: %s]\n", opt->nw_align  ? "use" : "don't use");
 	}
-	fprintf(fp, "\t--help | -h\n\t\tThis help.\n");
+	fprintf(fp, "\t--help, -h\n\t\tThis help.\n");
 	if (!strcmp(command, "cluster"))
 		fprintf(fp, "\t--indel <inddbl>\n\t\tSequencing indel error rate.  Cannot also use options --insertion or --deletion.  [DEFAULT: %f]\n", opt->indel_error);
 	if (!strcmp(command, "cluster"))
@@ -674,7 +674,7 @@ void fprint_usage(FILE *fp, const char *exe_name, const char *command, void *obj
 	if (!strcmp(command, "cluster"))
 		fprintf(fp, "\t--kmax <kuint>\n\t\tSet maximum number of clusters K.  [DEFAULT: %i]\n", opt->K_max);
 	if (!strcmp(command, "cluster") || !strcmp(command, "assignment"))
-		fprintf(fp, "\t--log_likelihood | -ll <lldbl>\n\t\tLower bound for screening reads during cluster assignment.  This is the minimum log assignment likelihood, ln pi_k + ln Pr(r_i|h_k). [DEFAULT: %f]\n", opt->ll_cutoff);
+		fprintf(fp, "\t--log_likelihood, -ll <lldbl>\n\t\tLower bound for screening reads during cluster assignment.  This is the minimum log assignment likelihood, ln pi_k + ln Pr(r_i|h_k). [DEFAULT: %f]\n", opt->ll_cutoff);
 	if (!strcmp(command, "cluster")) {
 		fprintf(fp, "\t--outfile, -o FILE | FILE1 FILE2\n\t\tOutput file(s) for haplotype discovery, or cluster assignments (when used with --haplotypes).  [REQUIRED]\n");
 		fprintf(fp, "\t\tBy default, provide base name of file to output haplotypes (extension .fa) and information (extension .out) or provide names for both files, FASTA first.\n");
@@ -684,13 +684,13 @@ void fprint_usage(FILE *fp, const char *exe_name, const char *command, void *obj
 		fprintf(fp, "\t--outfile, -o FILE\n\t\tOutput file cluster assignments.  [REQUIRED]\n");
 	}
 	if (!strcmp(command, "cluster")) {
-		fprintf(fp, "\t--per_candidate | --pdiag <pdbl>\n\t\tAdjust diagnostic threshold (--diagnostic) to %f / number_candidates.  [DEFAULT: %s]\n", opt->alpha, opt->per_candidate ? "yes" : "no");
+		fprintf(fp, "\t--per_candidate, --pdiag <pdbl>\n\t\tAdjust diagnostic threshold (--diagnostic) to %f / number_candidates.  [DEFAULT: %s]\n", opt->alpha, opt->per_candidate ? "yes" : "no");
 		fprintf(fp, "\t--nNW\n\t\tDo NOT use Needleman-Wunsch alignment to align candidate haplotypes to the haplotype set to detect indel errors  [DEFAULT: %s]\n", opt->nw_align  ? "use" : "don't use");
+		fprintf(fp, "\t--nJC69\n\t\tDo NOT use JC69 model for haplotypes. The JC69 model reduces the number of model parameters and increases sensitivity.  [DEFAULT: %s]\n", opt->JC69_model ? "use" : "don't use");
 	}
 	if (!strcmp(command, "cluster") || !strcmp(command, "assignment")) {
-		fprintf(fp, "\t--profile | -p <estr>\n\t\tThe input error profile. If none, convert quality score to Phred error probability.  [DEFAULT: none]\n");
+		fprintf(fp, "\t--profile, -p <estr>\n\t\tThe input error profile. If none, convert quality score to Phred error probability.  [DEFAULT: none]\n");
 		fprintf(fp, "\t--scores <match> <mismatch> [<transversion_mismatch>] <gap>\n\t\tSet scores of the Needleman-Wunsch aligner.  [DEFAULT: %d %d %d %d]\n", opt->score[0][0], opt->score[0][3], opt->score[0][1], opt->gap_p);
-		fprintf(fp, "\t--nJC69\n\t\tDo NOT use JC69 model for haplotypes. The JC69 model reduces the number of model parameters and increases sensitivity.  [DEFAULT: %s]\n", opt->JC69_model ? "use" : "don't use");
 	}
 	fprintf(fp, "\t--verbose INT\n\t\tVerbosity level; set to 8+ for debugging.  [DEFAULT: %d]\n", opt->info);
 //	fprintf(fp, "\t-k <kuint>\n\t\tNumber of haplotypes in the haplotype set (used with -i <hstr>).  [DEFAULT: %i]\n", opt->K);	/* KSD: get rid of this option */
