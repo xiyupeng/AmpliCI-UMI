@@ -1,10 +1,10 @@
-AmpliCI-UMI
+DAUMI (AmpliCI-UMI)
 ===========
 
-AmpliCI-UMI, Amplicon Clustering Inference with UMI information, is built on [AmpliCI](https://github.com/DormanLab/AmpliCI), but takes advantage of UMI information for denoising amplicon sequencing data, which contributes to a more accurate error profile and better clustering results.
-AmpliCI-UMI greatly enhances the accuracy of detecting rare sequences and provides deduplicated abundance estimation, elimilating PCR-induced errors and bias.
+DAUMI (AmpliCI-UMI), Amplicon Clustering Inference with UMI information, is built on [AmpliCI](https://github.com/DormanLab/AmpliCI), but takes advantage of UMI information for denoising amplicon sequencing data, which contributes to a more accurate error profile and better clustering results.
+DAUMI greatly enhances the accuracy of detecting rare sequences and provides deduplicated abundance estimation, elimilating PCR-induced errors and bias.
 
-AmpliCI-UMI now has been merged in AmpliCI v2.0+. 
+DAUMI now has been merged in AmpliCI v2.0+. 
 
 # Table of Contents
 1. [Installation](#installation)
@@ -20,7 +20,7 @@ AmpliCI-UMI now has been merged in AmpliCI v2.0+.
 
 # Installation <a name = "installation" />
 
-AmpliCI-UMI shares the same prerequisites with AmpliCI. Please check the [prerequisites](https://github.com/DormanLab/AmpliCI#prerequisites) before the following installation. 
+DAUMI shares the same prerequisites with AmpliCI. Please check the [prerequisites](https://github.com/DormanLab/AmpliCI#prerequisites) before the following installation. 
 The software has been tested under Linux and MacOS.
 
 1. Clone the repository.
@@ -46,7 +46,7 @@ The software has been tested under Linux and MacOS.
 
 The input of AmpliCI is a FASTQ file. 
 Besides the common practice for [preprocessing](https://github.com/DormanLab/AmpliCI#input) raw FASTQ files,
-additional preprocessing steps are required for AmpliCI-UMI.
+additional preprocessing steps are required for DAUMI.
 For each sample, users need to prepare their data in three FASTQ files.
 
 - `FILENAME.bc.fq`
@@ -244,7 +244,7 @@ TTTTAAAAC GTAAATAGT CGCTAATGA
 
 # Options <a name = "options" />
 
-Options of AmpliCI can be found in [here](https://github.com/DormanLab/AmpliCI#options). Below we list options specific for AmpliCI-UMI.
+Options of AmpliCI can be found in [here](https://github.com/DormanLab/AmpliCI#options). Below we list options specific for DAUMI.
 
 - `--partition`: Use a partition file when estimating errors. The partition file contains cluster assignment of each read. Reads assigned with the same number are in the same group. We can use either true partition or UMI-induced partition file to generate a better error profile. 
 
