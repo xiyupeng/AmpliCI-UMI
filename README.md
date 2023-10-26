@@ -4,7 +4,7 @@ DAUMI (AmpliCI-UMI)
 DAUMI (AmpliCI-UMI), Amplicon Clustering Inference with UMI information, is built on [AmpliCI](https://github.com/DormanLab/AmpliCI), but takes advantage of UMI information for denoising amplicon sequencing data, which contributes to a more accurate error profile and better clustering results.
 DAUMI greatly enhances the accuracy of detecting rare sequences and provides deduplicated abundance estimation, elimilating PCR-induced errors and bias.
 
-DAUMI now has been merged in AmpliCI v2.0+. 
+DAUMI now has been merged in AmpliCI v2.0+. Please see more information in [AmpliCI](https://github.com/DormanLab/AmpliCI) This page will not be further updated.
 
 # Table of Contents
 1. [Installation](#installation)
